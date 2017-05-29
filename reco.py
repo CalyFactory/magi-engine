@@ -2,6 +2,8 @@ from common import db_manager
 from common.util import utils
 from common import mongo_manager
 
+import random
+
 class Reco:
 
     def __init__(self, jsonData, userInfo):
@@ -24,58 +26,37 @@ class Reco:
 
         return typeFilteredList
 
+    #두 객체를 비교하는 함수
+    def compareRank(self, objA, objB):
+        return True
+
     def sortListByScore(self, originList):
 
         """
-        랭킹에 사용될 feature
-            추천 아이템의 클릭수
-            유저들이 이 아이템의 블로그를 본 시간들의 중간값
-            유저들이 이 아이템의 지도를 본 시간들의 중간값 
-            유저들이 이 아이템을 공유한 수 (웹뷰, 리스트뷰 두개)
-            유저 모듈에서 가져온 유저의 성향 -> 구체적이지 않음. 추후 재논의 필요
-
+        랭킹 순위
+        1. 장소
+        2. 목적지표
+        3. score (가격 + 거리)
         
         """
 
+        #목적지표가 아직 db에 없기에 랜덤으로 만들어주는 부분
+        for originData in originList:
+            originData['type_able_ing'] = random.choice([True, False])
+            originData['type_able_after'] = random.choice([True, False])
+
+        #score 계산
         featureList = []
         for originData in originList:
-
-            #추천 아이템의 클릭 수 
-            clickCount = mongo_manager.reco_log.find(
-                {
-                    "reco_hashkey": originData['reco_hashkey'],
-                    "category": "recoCell",
-                    "action": "click"
-                }
-            ).count()
-
-            #리스트 화면에서 공유하기를 한 수 
-            shareListCount = mongo_manager.reco_log.find(
-                {
-                    "reco_hashkey": originData['reco_hashkey'],
-                    "category": "sharingKakaoInCell"
-                }
-            ).count()
-
-            #블로그 화면에서 공유하기를 한 수 
-            shareWebCount = mongo_manager.reco_log.find(
-                {
-                    "reco_hashkey": originData['reco_hashkey'],
-                    "category": "sharingKakaoInBlog"
-                }
-            ).count()
-            
-            
-
-            featureList.append(
-                {
-                    'reco_hashkey': originData,
-                    'click_count': clickCount,
-                    'share_list_count': shareListCount,
-                    'share_web_count': shareWebCount
-                }
-            )
+            originData['score'] = random.random()
         
+        #정렬 
+        for i in range(0, len(originList)):
+            for j in range(i, len(originList)):
+                if self.compareRank(originList[i], originList[j]):
+                    tmp = originList[i]
+                    originList[i] = originList[j]
+                    originList[j] = tmp
 
 
         return originList

@@ -6,4 +6,11 @@ with open('./jsonData.json') as conf_json:
 
 
 recoModule = Reco(jsonData, None)
+
+filteredList = recoModule.getFilteredList()
+
+for listItem in filteredList:
+    print(listItem)
+
+print("=====================")
 print(recoModule.getRecoList())
