@@ -1,6 +1,7 @@
 from common import db_manager
 from common.util import utils
 from common import mongo_manager
+import json
 
 import random
 
@@ -50,8 +51,8 @@ class Reco:
 
         eventTypeId = self.jsonData['eventType'][0]['typeId']
 
-        itemAAvailabilityScore = itemA['event_type_availability'][eventTypeId]['int'] * 2 + itemA['event_type_availability'][eventTypeId]['after']
-        itemBAvailabilityScore = itemB['event_type_availability'][eventTypeId]['int'] * 2 + itemB['event_type_availability'][eventTypeId]['after']
+        itemAAvailabilityScore = self.__getAvailabilityScore(itemA, eventTypeId)
+        itemBAvailabilityScore = self.__getAvailabilityScore(itemB, eventTypeId)
 
         if itemAAvailabilityScore < itemBAvailabilityScore:
             return False 
@@ -59,6 +60,18 @@ class Reco:
             return True 
 
         return True
+
+    def __getAvailabilityScore(self, item, eventTypeId):
+
+        #TODO : 테스트중이라 주석차리 하지만 eventTypeId가 없는경우가 존재해서는 안됨. 실제론 error를 내야함 
+        if eventTypeId not in item['event_availability']:
+            #raise Exception('no event_type_id in item')
+            return 3 # 테스트 후 raise문을 사용할것
+        
+        ingValue = item['event_availability'][eventTypeId]['ing'] 
+        afterValue =  item['event_availability'][eventTypeId]['after']
+        
+        return ingValue * 2 + afterValue
 
     def sortListByScore(self, originList):
 
@@ -70,16 +83,6 @@ class Reco:
         
         """
 
-        #목적지표가 아직 db에 없기에 랜덤으로 만들어주는 부분
-        for originData in originList:
-            originData['event_type_availability'] = {}
-            for i in range(0,9):
-                originData['event_type_availability'][i] = {
-                    'ing' :random.choice([True, False]),
-                    'after' :random.choice([True, False])
-                }
-            print(originData)
-        
         #score 계산
         for originData in originList:
             originData['score'] = random.random()
@@ -102,19 +105,46 @@ class Reco:
         # TODO : region에 입력된 값이 db에 존재하는지 체크해야하지 않을까?
         queryOptionParam = ", ".join("'%s'" % locationData['region'] for locationData in locationList)
 
-        result = utils.fetch_all_json(
+        recoList = utils.fetch_all_json(
             db_manager.query(
                 """
-                SELECT reco_hashkey, region, title 
-                FROM RECOMMENDATION
+                SELECT 
+                    r.reco_hashkey, 
+                    r.region, 
+                    r.title,
+                    CONCAT(
+                        "[",
+                        GROUP_CONCAT(
+                            JSON_OBJECT(
+                                'id', etr.id,
+                                'event_type_id', etr.event_type_id,
+                                'ing', etr.ing,
+                                'after', etr.after
+                            )
+                        ),
+                        "]"
+                    ) as event_availability 
+                FROM RECOMMENDATION as r
+                LEFT JOIN EVENT_TYPE_RECO as etr
+                ON
+                    r.reco_hashkey = etr.reco_hashkey
                 WHERE
                     region IN (%s) 
+                GROUP BY r.reco_hashkey
                 """ %
                 queryOptionParam
             )
         )
+        
+        for recoItem in recoList:
+            jsonConvertedItem = json.loads(recoItem['event_availability'])
+            recoItem['event_availability'] = {}
+            for jsonItem in jsonConvertedItem:
+                if jsonItem['event_type_id'] == None:
+                    continue
+                recoItem['event_availability'][jsonItem['event_type_id']] = jsonItem
 
-        return result
+        return recoList
 
     def __getTimeFilteredList(self, originList):
         timeData = self.jsonData['time']

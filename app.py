@@ -19,7 +19,7 @@ i=0
 for listItem in filteredList:
 
     print(
-        "[%d] %s %s"
+        "[%2d] %5s %s"
         %
         (
             i,
@@ -37,7 +37,7 @@ i=0
 for listItem in sortedList:
 
     print(
-        "[%d] %s %s"
+        "[%2d] %5s %s"
         %
         (
             i,
