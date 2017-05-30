@@ -54,9 +54,9 @@ class Reco:
         itemAAvailabilityScore = self.__getAvailabilityScore(itemA, eventTypeId)
         itemBAvailabilityScore = self.__getAvailabilityScore(itemB, eventTypeId)
 
-        if itemAAvailabilityScore < itemBAvailabilityScore:
+        if itemAAvailabilityScore > itemBAvailabilityScore:
             return False 
-        elif itemARegionPriority > itemBRegionPriority:
+        elif itemAAvailabilityScore < itemBAvailabilityScore:
             return True 
 
         return True
@@ -66,11 +66,11 @@ class Reco:
         #TODO : 테스트중이라 주석차리 하지만 eventTypeId가 없는경우가 존재해서는 안됨. 실제론 error를 내야함 
         if eventTypeId not in item['event_availability']:
             #raise Exception('no event_type_id in item')
-            return 3 # 테스트 후 raise문을 사용할것
+            return 0 # 테스트 후 raise문을 사용할것
         
         ingValue = item['event_availability'][eventTypeId]['ing'] 
         afterValue =  item['event_availability'][eventTypeId]['after']
-        
+
         return ingValue * 2 + afterValue
 
     def sortListByScore(self, originList):
@@ -143,7 +143,7 @@ class Reco:
                 if jsonItem['event_type_id'] == None:
                     continue
                 recoItem['event_availability'][jsonItem['event_type_id']] = jsonItem
-
+        
         return recoList
 
     def __getTimeFilteredList(self, originList):
@@ -152,6 +152,20 @@ class Reco:
 
     def __getTypeFilteredList(self, originList):
         eventTypeData = self.jsonData['eventType']
+        eventTypeId = self.jsonData['eventType'][0]['typeId']
+
+        for originData in originList[:]:            
+            if eventTypeId not in originData['event_availability']: 
+                #raise Exception('no event_type_id in item') #TODO : 테스트일때만 에러를 생략
+                ing = 0
+                after = 0
+            else:
+                ing = originData['event_availability'][eventTypeId]['ing']
+                after = originData['event_availability'][eventTypeId]['after']
+
+#            if ing + after == 0: #TODO : 테스트 일때만 필터링을 안함
+#                originList.remove(originData)
+        print(originList)
         return originList
 
 def hello():

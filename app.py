@@ -36,12 +36,22 @@ sortedList = recoModule.getRecoList()
 i=0
 for listItem in sortedList:
 
+    
+    if jsonData['eventType'][0]['typeId'] in listItem['event_availability']:
+        ing = listItem['event_availability'][jsonData['eventType'][0]['typeId']]['ing'] 
+        after = listItem['event_availability'][jsonData['eventType'][0]['typeId']]['after'] 
+    else:
+        ing = 0
+        after = 0
+
     print(
-        "[%2d] %5s %s"
+        "[%2d] %-5s %d %d %s"
         %
         (
             i,
             listItem['region'],
+            ing,
+            after,
             listItem['title']
         )
     )
