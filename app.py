@@ -59,3 +59,5 @@ for category in sortedList:
             )
         )
         i+=1
+
+print(sortedList)

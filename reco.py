@@ -114,7 +114,8 @@ class Reco:
                         tmp = originList[row][i]
                         originList[row][i] = originList[row][j]
                         originList[row][j] = tmp
-
+            for i in range(0, len(originList[row])):
+                originList[row][i]['no'] = i
 
         return originList
 
