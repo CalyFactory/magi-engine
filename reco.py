@@ -2,7 +2,7 @@ from common import db_manager
 from common.util import utils
 from common import mongo_manager
 import json
-
+import re
 import random
 
 class Reco:
@@ -59,7 +59,20 @@ class Reco:
         elif itemAAvailabilityScore < itemBAvailabilityScore:
             return True 
 
+        #score 
+        itemAScore = itemA['score']
+        itemBScore = itemB['score']
+
+        if itemAScore < itemBScore:
+            return False 
+        elif itemAScore > itemBScore:
+            return True 
+
+        #등록된 시간 순서대로
+
         return True
+
+        
 
     def __getAvailabilityScore(self, item, eventTypeId):
 
@@ -85,8 +98,13 @@ class Reco:
 
         #score 계산
         for originData in originList:
-            originData['score'] = random.random()
-        
+            priceData = originData['price'] / 1000
+            distanceData = int(re.search(r'\d+', originData['distance']).group())
+            originData['score'] = (
+                pow(priceData, 1) * 
+                pow(distanceData, 2)
+            )
+
         #정렬 
         for i in range(0, len(originList)):
             for j in range(i, len(originList)):
@@ -112,6 +130,8 @@ class Reco:
                     r.reco_hashkey, 
                     r.region, 
                     r.title,
+                    r.price, 
+                    r.distance,
                     CONCAT(
                         "[",
                         GROUP_CONCAT(
@@ -165,7 +185,6 @@ class Reco:
 
 #            if ing + after == 0: #TODO : 테스트 일때만 필터링을 안함
 #                originList.remove(originData)
-        print(originList)
         return originList
 
 def hello():

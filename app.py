@@ -45,13 +45,14 @@ for listItem in sortedList:
         after = 0
 
     print(
-        "[%2d] %-5s %d %d %s"
+        "[%2d] %5s %d %d %5d %s"
         %
         (
             i,
             listItem['region'],
             ing,
             after,
+            listItem['score'],
             listItem['title']
         )
     )
