@@ -39,9 +39,9 @@ for category in sortedList:
     print("category : " + str(category))
     i=0
     for listItem in sortedList[category]:
-        if jsonData['eventType'][0]['typeId'] in listItem['event_availability']:
-            ing = listItem['event_availability'][jsonData['eventType'][0]['typeId']]['ing'] 
-            after = listItem['event_availability'][jsonData['eventType'][0]['typeId']]['after'] 
+        if jsonData['event_types'][0]['id'] in listItem['event_availability']:
+            ing = listItem['event_availability'][jsonData['event_types'][0]['id']]['ing'] 
+            after = listItem['event_availability'][jsonData['event_types'][0]['id']]['after'] 
         else:
             ing = 0
             after = 0
