@@ -97,21 +97,23 @@ class Reco:
         """
 
         #score 계산
-        for originData in originList:
-            priceData = originData['price'] / 1000
-            distanceData = int(re.search(r'\d+', originData['distance']).group())
-            originData['score'] = (
-                pow(priceData, 1) * 
-                pow(distanceData, 2)
-            )
-
+        for row in originList:
+            for originData in originList[row]:
+                priceData = originData['price'] / 1000
+                distanceData = int(re.search(r'\d+', originData['distance']).group())
+                originData['score'] = (
+                    pow(priceData, 1) * 
+                    pow(distanceData, 2)
+                )
+                
         #정렬 
-        for i in range(0, len(originList)):
-            for j in range(i, len(originList)):
-                if self.isFirstArgHighPriority(originList[i], originList[j]):
-                    tmp = originList[i]
-                    originList[i] = originList[j]
-                    originList[j] = tmp
+        for row in originList:
+            for i in range(0, len(originList[row])):
+                for j in range(i, len(originList[row])):
+                    if self.isFirstArgHighPriority(originList[row][i], originList[row][j]):
+                        tmp = originList[row][i]
+                        originList[row][i] = originList[row][j]
+                        originList[row][j] = tmp
 
 
         return originList
@@ -123,7 +125,7 @@ class Reco:
         # TODO : region에 입력된 값이 db에 존재하는지 체크해야하지 않을까?
         queryOptionParam = ", ".join("'%s'" % locationData['region'] for locationData in locationList)
 
-        recoList = utils.fetch_all_json(
+        dataList = utils.fetch_all_json(
             db_manager.query(
                 """
                 SELECT 
@@ -132,6 +134,7 @@ class Reco:
                     r.title,
                     r.price, 
                     r.distance,
+                    r.category,
                     CONCAT(
                         "[",
                         GROUP_CONCAT(
@@ -149,20 +152,31 @@ class Reco:
                 ON
                     r.reco_hashkey = etr.reco_hashkey
                 WHERE
-                    region IN (%s) 
+                    region IN (%s)
                 GROUP BY r.reco_hashkey
                 """ %
                 queryOptionParam
             )
         )
+
+        recoList = {
+            'restaurant': [],
+            'cafe': [],
+            'place': []
+        }
+
+        for dataItem in dataList:
+            recoList[dataItem['category']].append(dataItem)
         
-        for recoItem in recoList:
-            jsonConvertedItem = json.loads(recoItem['event_availability'])
-            recoItem['event_availability'] = {}
-            for jsonItem in jsonConvertedItem:
-                if jsonItem['event_type_id'] == None:
-                    continue
-                recoItem['event_availability'][jsonItem['event_type_id']] = jsonItem
+        for dataItem in recoList:
+        
+            for recoItem in recoList[dataItem]:
+                jsonConvertedItem = json.loads(recoItem['event_availability'])
+                recoItem['event_availability'] = {}
+                for jsonItem in jsonConvertedItem:
+                    if jsonItem['event_type_id'] == None:
+                        continue
+                    recoItem['event_availability'][jsonItem['event_type_id']] = jsonItem
         
         return recoList
 
@@ -174,17 +188,18 @@ class Reco:
         eventTypeData = self.jsonData['eventType']
         eventTypeId = self.jsonData['eventType'][0]['typeId']
 
-        for originData in originList[:]:            
-            if eventTypeId not in originData['event_availability']: 
-                #raise Exception('no event_type_id in item') #TODO : 테스트일때만 에러를 생략
-                ing = 0
-                after = 0
-            else:
-                ing = originData['event_availability'][eventTypeId]['ing']
-                after = originData['event_availability'][eventTypeId]['after']
+        for row in originList:
+            for originData in originList[row][:]:            
+                if eventTypeId not in originData['event_availability']: 
+                    #raise Exception('no event_type_id in item') #TODO : 테스트일때만 에러를 생략
+                    ing = 0
+                    after = 0
+                else:
+                    ing = originData['event_availability'][eventTypeId]['ing']
+                    after = originData['event_availability'][eventTypeId]['after']
 
-#            if ing + after == 0: #TODO : 테스트 일때만 필터링을 안함
-#                originList.remove(originData)
+    #            if ing + after == 0: #TODO : 테스트 일때만 필터링을 안함
+    #                originList.remove(originData)
         return originList
 
 def hello():
