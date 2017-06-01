@@ -49,7 +49,7 @@ class Reco:
         #목적지표 event_type_availability
         ## TODO : 회의때 목적은 여러개인데 목적지표로 순위를 정하는것을 목적이 하나인 경우만 생각해서 정한 것 같다. 고민이 필요함
 
-        eventTypeId = self.jsonData['eventType'][0]['typeId']
+        eventTypeId = self.jsonData['event_types'][0]['id']
 
         itemAAvailabilityScore = self.__getAvailabilityScore(itemA, eventTypeId)
         itemBAvailabilityScore = self.__getAvailabilityScore(itemB, eventTypeId)
@@ -186,8 +186,8 @@ class Reco:
         return originList 
 
     def __getTypeFilteredList(self, originList):
-        eventTypeData = self.jsonData['eventType']
-        eventTypeId = self.jsonData['eventType'][0]['typeId']
+        eventTypeData = self.jsonData['event_types']
+        eventTypeId = self.jsonData['event_types'][0]['id']
 
         for row in originList:
             for originData in originList[row][:]:            
