@@ -18,12 +18,23 @@ class Reco:
         for locationData in self.jsonData['locations']:
             self.locationPriorityList[locationData['region']] = locationData['no']
 
+        self.eventTypeIdList = []
+        for eventType in self.jsonData['event_types']:
+            self.eventTypeIdList.append(eventType['id'])
+
     def getRecoList(self):
-        filteredList = self.getFilteredList()
-        sortedList = self.sortListByScore(filteredList)
+        #filteredList = self.getFilteredList()
+        allList = self.getAllList()
+        sortedList = self.sortListByScore(allList)
 
         #카테고리별로 분류해서 리턴하기
-        return filteredList
+        return sortedList
+
+    def getAllList(self):
+
+        recoList = self.__getAllList()
+
+        return recoList
 
     def getFilteredList(self):
 
@@ -35,7 +46,12 @@ class Reco:
 
     #두 객체의 우선순위 비교하는 함수
     #첫 번째 인자의 우선순위가 높을경우 True, 아닐경우 False 를 리턴함
-    def isFirstArgHighPriority(self, itemA, itemB):
+    def isSecondArgHighPriority(self, itemA, itemB):
+
+        if itemA['score'] < itemB['score']:
+            return True 
+        else:
+            return False 
 
         #region
         itemARegionPriority = self.locationPriorityList[itemA['region']]
@@ -82,7 +98,6 @@ class Reco:
             return 0 # 테스트 후 raise문을 사용할것
         
         ingValue = item['event_availability'][eventTypeId]['ing'] 
-        afterValue =  item['event_availability'][eventTypeId]['after']
 
         return ingValue * 2 + afterValue
 
@@ -99,18 +114,13 @@ class Reco:
         #score 계산
         for row in originList:
             for originData in originList[row]:
-                priceData = originData['price'] / 1000
-                distanceData = int(re.search(r'\d+', originData['distance']).group())
-                originData['score'] = (
-                    pow(priceData, 1) * 
-                    pow(distanceData, 2)
-                )
+                originData['score'] = self.__getScore(originData)
                 
         #정렬 
         for row in originList:
             for i in range(0, len(originList[row])):
                 for j in range(i, len(originList[row])):
-                    if self.isFirstArgHighPriority(originList[row][i], originList[row][j]):
+                    if self.isSecondArgHighPriority(originList[row][i], originList[row][j]):
                         tmp = originList[row][i]
                         originList[row][i] = originList[row][j]
                         originList[row][j] = tmp
@@ -118,6 +128,90 @@ class Reco:
                 originList[row][i]['no'] = i
 
         return originList
+
+    def __getScore(self, originData):
+
+        score = 0
+
+        #region 
+        if originData['region'] in self.locationPriorityList:
+            score += (10 - self.locationPriorityList[originData['region']]) * 10000
+
+        #목적
+
+        for i in range(0, len(self.eventTypeIdList)):
+            eventTypeId = self.eventTypeIdList[i]
+            ingValue = 1
+            if eventTypeId in originData['event_availability']:
+                ingValue = originData['event_availability'][eventTypeId]['ing']
+            # ○ => 3   //*2000
+            # △ => 2  //*1000
+            # × => 1   //*0
+
+            score += ((ingValue - 1) * 1000) * (2 - 0.1 * i)
+        
+        
+        #가격
+
+        priceData = originData['price'] / 1000
+        distanceString = re.search(r'\d+', originData['distance'])
+        if distanceString is None:
+            distanceData = 99
+        else:
+            distanceData = int(distanceString.group())
+        return score
+
+    def __getAllList(self):
+        dataList = utils.fetch_all_json(    
+            db_manager.query(
+                """
+                SELECT 
+                    r.reco_hashkey, 
+                    r.region, 
+                    r.title,
+                    r.price, 
+                    r.distance,
+                    r.category,
+                    CONCAT(
+                        "[",
+                        GROUP_CONCAT(
+                            JSON_OBJECT(
+                                'id', etr.id,
+                                'event_type_id', etr.event_type_id,
+                                'ing', etr.ing
+                            )
+                        ),
+                        "]"
+                    ) as event_availability 
+                FROM RECOMMENDATION as r
+                LEFT JOIN EVENT_TYPE_RECO as etr
+                ON
+                    r.reco_hashkey = etr.reco_hashkey
+                GROUP BY r.reco_hashkey
+                """
+            )
+        )
+
+        recoList = {
+            'restaurant': [],
+            'cafe': [],
+            'place': []
+        }
+
+        for dataItem in dataList:
+            recoList[dataItem['category']].append(dataItem)
+        
+        for dataItem in recoList:
+        
+            for recoItem in recoList[dataItem]:
+                jsonConvertedItem = json.loads(recoItem['event_availability'])
+                recoItem['event_availability'] = {}
+                for jsonItem in jsonConvertedItem:
+                    if jsonItem['event_type_id'] == None:
+                        continue
+                    recoItem['event_availability'][jsonItem['event_type_id']] = jsonItem
+        
+        return recoList
 
         
     def __getLocationFilteredList(self):
@@ -142,8 +236,7 @@ class Reco:
                             JSON_OBJECT(
                                 'id', etr.id,
                                 'event_type_id', etr.event_type_id,
-                                'ing', etr.ing,
-                                'after', etr.after
+                                'ing', etr.ing
                             )
                         ),
                         "]"

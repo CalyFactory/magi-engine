@@ -10,7 +10,7 @@ with open('./jsonData.json') as conf_json:
         
 recoModule = Reco(jsonData, None)
 
-filteredList = recoModule.getFilteredList()
+filteredList = recoModule.getAllList()
 
 print("=====================")
 print("filtered list")
@@ -41,19 +41,17 @@ for category in sortedList:
     for listItem in sortedList[category]:
         if jsonData['event_types'][0]['id'] in listItem['event_availability']:
             ing = listItem['event_availability'][jsonData['event_types'][0]['id']]['ing'] 
-            after = listItem['event_availability'][jsonData['event_types'][0]['id']]['after'] 
         else:
             ing = 0
             after = 0
 
         print(
-            "[%2d] %5s %d %d %5d %s"
+            "[%2d] %5s %d %5d %s"
             %
             (
                 i,
                 listItem['region'],
                 ing,
-                after,
                 listItem['score'],
                 listItem['title']
             )
