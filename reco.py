@@ -8,6 +8,9 @@ import math
 
 class Reco:
 
+    pricePriority = 1
+    distancePriority = 2
+
     def __init__(self, jsonData, userInfo):
         self.jsonData = jsonData
         self.userInfo = userInfo
@@ -22,6 +25,52 @@ class Reco:
         self.eventTypeIdList = []
         for eventType in self.jsonData['event_types']:
             self.eventTypeIdList.append(eventType['id'])
+        
+        priceList = utils.fetch_all_json(
+            db_manager.query(
+                """
+                SELECT price 
+                FROM RECOMMENDATION
+                ORDER BY price 
+                """
+            )
+        )
+
+        distanceRowList = utils.fetch_all_json(
+            db_manager.query(
+                """
+                SELECT distance 
+                FROM RECOMMENDATION
+                ORDER BY distance 
+                """
+            )
+        )
+
+        distanceList = []
+        for distanceRow in distanceRowList:
+            distanceString = re.search(r'\d+', distanceRow['distance'])
+            if distanceString is None:
+                distanceData = 99
+            else:
+                distanceData = int(distanceString.group())
+            distanceList.append(distanceData)
+
+        distanceList.sort()
+
+        self.priceGradeList = []
+        self.distanceGradeList = []
+
+        n = 9
+
+        for i in range(1, n + 1):
+            position = int(self.getSNDPercent(n, i) * len(priceList)) - 1
+            self.priceGradeList.append(priceList[position]['price'])
+
+            position = int(self.getSNDPercent(n, i) * len(distanceList)) - 1
+            self.distanceGradeList.append(distanceList[position])
+
+        print(self.priceGradeList)
+        print(self.distanceGradeList)
 
     def getSNDPercent(self, n, index):
         if n == index:
@@ -140,6 +189,12 @@ class Reco:
 
         return originList
 
+    def getRange(self, array, value):
+        for i in range(0, len(array)):
+            if value<=array[i]:
+                return i + 1
+        return len(array)
+
     def __getScore(self, originData):
 
         score = 0
@@ -164,12 +219,21 @@ class Reco:
         
         #가격
 
-        priceData = originData['price'] / 1000
+        priceData = originData['price']
         distanceString = re.search(r'\d+', originData['distance'])
         if distanceString is None:
             distanceData = 99
         else:
             distanceData = int(distanceString.group())
+        
+        priceRank = self.getRange(self.priceGradeList, priceData)
+        distanceRank = self.getRange(self.distanceGradeList, distanceData)
+
+        print("price %d %d" % (priceData, priceRank))
+        print("distance %d %d" % (distanceData, distanceRank))
+
+        score += (priceRank * self.pricePriority + distanceRank * self.distancePriority) * 100
+
         return score
 
     def __getAllList(self):
