@@ -4,6 +4,7 @@ from common import mongo_manager
 import json
 import re
 import random
+import math
 
 class Reco:
 
@@ -21,6 +22,16 @@ class Reco:
         self.eventTypeIdList = []
         for eventType in self.jsonData['event_types']:
             self.eventTypeIdList.append(eventType['id'])
+
+    def getSNDPercent(self, n, index):
+        if n == index:
+            return 1
+        point = (index - n / 2) / 2
+        score = self.__getSNDScore(point)
+        return score
+    
+    def __getSNDScore(self, x):
+        return (1.0 + math.erf(x / math.sqrt(2.0))) / 2.0
 
     def getRecoList(self):
         #filteredList = self.getFilteredList()

@@ -12,6 +12,13 @@ recoModule = Reco(jsonData, None)
 
 filteredList = recoModule.getAllList()
 
+n = 9
+
+for i in range(1,n + 1):
+    print("[%d] %f" % (i, recoModule.getSNDPercent(n, i)))
+
+
+"""
 print("=====================")
 print("filtered list")
 print("=====================")
@@ -57,3 +64,4 @@ for category in sortedList:
             )
         )
         i+=1
+"""
