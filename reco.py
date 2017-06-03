@@ -8,8 +8,16 @@ import math
 
 class Reco:
 
-    pricePriority = 1
-    distancePriority = 2
+    pricePriority = {
+        'restaurant':67.3, 
+        'cafe':41.1, 
+        'place':57.4
+    }
+    distancePriority = {
+        'restaurant':30.1, 
+        'cafe':36.55, 
+        'place':40.7
+    }
 
     def __init__(self, jsonData, userInfo):
         self.jsonData = jsonData
@@ -68,7 +76,7 @@ class Reco:
 
             position = int(self.getSNDPercent(n, i) * len(distanceList)) - 1
             self.distanceGradeList.append(distanceList[position])
-
+            print(self.getSNDPercent(n, i))
         print(self.priceGradeList)
         print(self.distanceGradeList)
 
@@ -214,7 +222,7 @@ class Reco:
             # △ => 2  //*1000
             # × => 1   //*0
 
-            score += ((ingValue - 1) * 1000) * (2 - 0.1 * i)
+            score += ((ingValue - 1) * 1000) 
         
         
         #가격
@@ -229,10 +237,11 @@ class Reco:
         priceRank = self.getRange(self.priceGradeList, priceData)
         distanceRank = self.getRange(self.distanceGradeList, distanceData)
 
-        print("price %d %d" % (priceData, priceRank))
-        print("distance %d %d" % (distanceData, distanceRank))
+        sumPriority = self.pricePriority[originData['category']] + self.distancePriority[originData['category']]
+        pricePriority = self.pricePriority[originData['category']] / sumPriority
+        distancePriority = self.distancePriority[originData['category']] / sumPriority
 
-        score += (priceRank * self.pricePriority + distanceRank * self.distancePriority) * 100
+        score += (10 - (priceRank * pricePriority + distanceRank * distancePriority)) * 100
 
         return score
 
