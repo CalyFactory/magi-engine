@@ -7,42 +7,71 @@ logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
 
 with open('./jsonData.json') as conf_json:
     jsonData = json.load(conf_json)
-        
+"""
+추천모듈 사용방법!!!
+
+#추천 모듈 객체 생성!
+recoModule = Reco(jsonData, None) #첫번째 인자는 일정보강 모듈에서 받은 json데이터, 두번째 인자는 유저성향인데 현재 사용하지 않으니 None으로 
+
+#추천 데이터 가져오기!
+recoModule.getRecoList()
+
+끗!
+
+"""
+
+
+
+
 recoModule = Reco(jsonData, None)
 
-filteredList = recoModule.getFilteredList()
+print( recoModule.getRecoList())
 
+
+"""
 print("=====================")
 print("filtered list")
 print("=====================")
-i=0
-for listItem in filteredList:
+for category in filteredList:
+    print("category : " + str(category))
+    i=0
+    for listItem in filteredList[category]:
 
-    print(
-        "[%d] %s %s"
-        %
-        (
-            i,
-            listItem['region'],
-            listItem['title']
+        print(
+            "[%2d] %5s %s"
+            %
+            (
+                i,
+                listItem['region'],
+                listItem['title']
+            )
         )
-    )
-    i+=1
+        i+=1
 print("\n\n\n")
 print("=====================")
 print("sorted list")
 print("=====================")
 sortedList = recoModule.getRecoList()
-i=0
-for listItem in sortedList:
+for category in sortedList:
+    print("category : " + str(category))
+    i=0
+    for listItem in sortedList[category]:
+        if jsonData['event_types'][0]['id'] in listItem['event_availability']:
+            ing = listItem['event_availability'][jsonData['event_types'][0]['id']]['ing'] 
+        else:
+            ing = 0
+            after = 0
 
-    print(
-        "[%d] %s %s"
-        %
-        (
-            i,
-            listItem['region'],
-            listItem['title']
+        print(
+            "[%2d] %5s %d %5d %s"
+            %
+            (
+                i,
+                listItem['region'],
+                ing,
+                listItem['score'],
+                listItem['title']
+            )
         )
-    )
-    i+=1
+        i+=1
+"""
