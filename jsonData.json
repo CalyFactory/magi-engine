@@ -1,13 +1,13 @@
 {
     "locations": [
         {
-            "main_region": "중부",
-            "region": "이촌",
+            "main_region": "남부",
+            "region": "강남역",
             "no": 1
         },
         {
-            "main_region": "중부",
-            "region": "이태원",
+            "main_region": "남부",
+            "region": "역삼역",
             "no": 2
         }
     ],

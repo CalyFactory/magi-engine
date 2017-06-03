@@ -194,6 +194,13 @@ class Reco:
                         originList[row][j] = tmp
             for i in range(0, len(originList[row])):
                 originList[row][i]['no'] = i
+        
+        #필터링 
+        
+        for row in originList:
+            for originData in originList[row][:]:      
+                if originData['score'] < 10000:
+                    originList[row].remove(originData)
 
         return originList
 
