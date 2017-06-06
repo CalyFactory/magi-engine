@@ -5,6 +5,8 @@ import json
 import re
 import random
 import math
+from bson.json_util import dumps
+
 
 class Reco:
 
@@ -19,9 +21,9 @@ class Reco:
         'place':40.7
     }
 
-    def __init__(self, jsonData, userInfo):
+    def __init__(self, jsonData, accountHashKey):
         self.jsonData = jsonData
-        self.userInfo = userInfo
+        self.accountHashKey = accountHashKey
 
         self.initData()
 
@@ -80,6 +82,109 @@ class Reco:
         print(self.priceGradeList)
         print(self.distanceGradeList)
 
+        #load user data 
+        recoLogList = json.loads(
+            dumps(
+                mongo_manager.reco_log.find(
+                    {
+                        "accountHashkey": self.accountHashKey
+                    }
+                )
+            )
+        )
+
+        
+        logRecoHashKeyList = []
+        for recoLog in recoLogList:
+            if (recoLog['action'] == "click" and recoLog['category'] == "recoCell" and recoLog['label'] == "deepLink") or \
+                (recoLog['action'] == "click" and recoLog['category'] == "recoCell" and recoLog['label'] == "sharingKakao") or \
+                (recoLog['action'] == "click" and recoLog['category'] == "recoCell" and recoLog['label'] == "sharingKakaoInBlog") or \
+                (recoLog['action'] == "click" and recoLog['category'] == "recoMapCell" and recoLog['label'] == "deepLink") or \
+                (recoLog['action'] == "click" and recoLog['category'] == "recoMapCell" and recoLog['label'] == "sharingKakaoInCell"):
+                logRecoHashKeyList.append(recoLog['recoHashkey'])
+        
+        if len(logRecoHashKeyList) != 0:
+            result = utils.fetch_all_json(
+                db_manager.query(
+                    """
+                    SELECT 
+                        reco_hashkey,
+                        property_romantic, 
+                        property_active_dynamic, 
+                        property_active_static, 
+                        property_food_korean, 
+                        property_food_chinese, 
+                        property_food_japanese, 
+                        property_food_italian
+                    FROM RECOMMENDATION
+                    WHERE 
+                    RECOMMENDATION.reco_hashkey IN (%s)
+                    """ %
+                    (
+                        ", ".join("'%s'" % row for row in logRecoHashKeyList)
+                    )
+                )
+            )
+        else:
+            result = []
+        
+        self.userTypeClickCount = {
+            'property_romantic':0,
+            'property_active_dynamic':0,
+            'property_active_static':0,
+            'property_food_korean':0,
+            'property_food_chinese':0,
+            'property_food_japanese':0,
+            'property_food_italian':0,
+            'all':len(logRecoHashKeyList)
+        }
+        
+        for row in result:
+            hashkeyNum = logRecoHashKeyList.count(row['reco_hashkey'])
+            for key in row:
+                if row[key] == None:
+                    continue
+                if key == 'reco_hashkey':
+                    continue
+                self.userTypeClickCount[key] += row[key] * hashkeyNum
+        print(self.userTypeClickCount)
+        self.userPropertyScore = {}
+        if self.userTypeClickCount['all'] == 0:
+            self.userPropertyScore['romanticPriority'] = 0.5
+        else:
+            self.userPropertyScore['romanticPriority'] = (
+                self.userTypeClickCount['property_romantic'] / self.userTypeClickCount['all']
+            )
+        activeList = [
+            'property_active_dynamic',
+            'property_active_static'
+        ]
+        foodList = [
+            'property_food_korean',
+            'property_food_chinese',
+            'property_food_japanese',
+            'property_food_italian'
+        ]
+        foodList.sort(
+            key = lambda e:(self.userTypeClickCount[e]),
+            reverse = True
+        )
+        activeList.sort(
+            key = lambda e:(self.userTypeClickCount[e]),
+            reverse = True
+        )
+        
+        i = 0
+        for activeRow in activeList:
+            self.userPropertyScore[activeRow] = 4.5 - i
+            i+=1
+            
+        i = 0
+        for foodRow in foodList:
+            self.userPropertyScore[foodRow] = 4.5 - i
+            i+=1
+        print(self.userPropertyScore)
+
     def getSNDPercent(self, n, index):
         if n == index:
             return 1
@@ -91,9 +196,9 @@ class Reco:
         return (1.0 + math.erf(x / math.sqrt(2.0))) / 2.0
 
     def getRecoList(self):
-        #filteredList = self.getFilteredList()
-        allList = self.getAllList()
-        sortedList = self.sortListByScore(allList)
+        filteredList = self.getFilteredList()
+        #allList = self.getAllList()
+        sortedList = self.sortListByScore(filteredList)
 
         #카테고리별로 분류해서 리턴하기
         return sortedList
@@ -108,9 +213,9 @@ class Reco:
 
         locationFilteredList = self.__getLocationFilteredList()
 #        timeFilteredList = self.__getTimeFilteredList(locationFilteredList)
-        typeFilteredList = self.__getTypeFilteredList(locationFilteredList)
+#        typeFilteredList = self.__getTypeFilteredList(locationFilteredList)
 
-        return typeFilteredList
+        return locationFilteredList
 
     #두 객체의 우선순위 비교하는 함수
     #첫 번째 인자의 우선순위가 높을경우 True, 아닐경우 False 를 리턴함
@@ -194,7 +299,15 @@ class Reco:
                         originList[row][j] = tmp
             for i in range(0, len(originList[row])):
                 originList[row][i]['no'] = i
-
+               
+        """
+        #필터링 
+        
+        for row in originList:
+            for originData in originList[row][:]:      
+                if originData['score'] < 10000:
+                    originList[row].remove(originData)
+        """
         return originList
 
     def getRange(self, array, value):
@@ -209,7 +322,7 @@ class Reco:
 
         #region 
         if originData['region'] in self.locationPriorityList:
-            score += (10 - self.locationPriorityList[originData['region']]) * 10000
+            score += (10 - self.locationPriorityList[originData['region']]) * 100000
 
         #목적
 
@@ -222,8 +335,51 @@ class Reco:
             # △ => 2  //*1000
             # × => 1   //*0
 
-            score += ((ingValue - 1) * 1000) 
-        
+            score += ((ingValue - 1) * 10000) 
+      
+        # 개인화 점수 
+
+        personalScore = 0
+
+        propertyList = [
+            'property_romantic',
+            'property_active_dynamic',
+            'property_active_static',
+            'property_food_korean',
+            'property_food_chinese',
+            'property_food_japanese',
+            'property_food_italian',
+        ]
+        for propertyRow in propertyList:
+            if propertyRow not in originData:
+                originData[propertyRow] = 0
+            if propertyRow == 'property_romantic':
+                if self.userPropertyScore['romanticPriority'] > 0.5:
+                    personalScore += originData['property_romantic'] * 4.5
+                else:
+                    personalScore += (1 - originData['property_romantic']) * 4.5
+            else:
+                personalScore += originData[propertyRow] * self.userPropertyScore[propertyRow]
+
+        print(personalScore)
+        print(
+            "title : %s \nromantic : %s\n dynamic : %s\n static : %s\n korean : %s\n chinese : %s\njapanese : %s \nitalian : %s\n\n" 
+            %
+            (
+                originData['title'],
+                originData['property_romantic'],
+                originData['property_active_dynamic'],
+                originData['property_active_static'],
+                originData['property_food_korean'],
+                originData['property_food_chinese'],
+                originData['property_food_japanese'],
+                originData['property_food_italian']
+            ) 
+        )
+        print("==")
+        score += int(personalScore) * 1000
+
+
         
         #가격
 
@@ -241,7 +397,9 @@ class Reco:
         pricePriority = self.pricePriority[originData['category']] / sumPriority
         distancePriority = self.distancePriority[originData['category']] / sumPriority
 
-        score += (10 - (priceRank * pricePriority + distanceRank * distancePriority)) * 100
+        score += int(10 - (priceRank * pricePriority + distanceRank * distancePriority)) * 100
+
+
 
         return score
 
@@ -314,6 +472,13 @@ class Reco:
                     r.price, 
                     r.distance,
                     r.category,
+                    r.property_romantic,
+                    r.property_active_dynamic,
+                    r.property_active_static,
+                    r.property_food_korean,
+                    r.property_food_chinese,
+                    r.property_food_japanese,
+                    r.property_food_italian,
                     CONCAT(
                         "[",
                         GROUP_CONCAT(
@@ -371,10 +536,8 @@ class Reco:
                 if eventTypeId not in originData['event_availability']: 
                     #raise Exception('no event_type_id in item') #TODO : 테스트일때만 에러를 생략
                     ing = 0
-                    after = 0
                 else:
                     ing = originData['event_availability'][eventTypeId]['ing']
-                    after = originData['event_availability'][eventTypeId]['after']
 
     #            if ing + after == 0: #TODO : 테스트 일때만 필터링을 안함
     #                originList.remove(originData)

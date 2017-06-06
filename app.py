@@ -1,5 +1,6 @@
 from reco import Reco
 from common import db_manager
+from common import mongo_manager
 from common.util import utils
 import json
 import logging
@@ -22,10 +23,8 @@ recoModule.getRecoList()
 
 
 
+recoModule = Reco(jsonData, '2')
 
-recoModule = Reco(jsonData, None)
-
-print( recoModule.getRecoList())
 
 
 """
@@ -48,30 +47,27 @@ for category in filteredList:
         )
         i+=1
 print("\n\n\n")
+"""
+
 print("=====================")
 print("sorted list")
 print("=====================")
+
 sortedList = recoModule.getRecoList()
 for category in sortedList:
     print("category : " + str(category))
     i=0
     for listItem in sortedList[category]:
-        if jsonData['event_types'][0]['id'] in listItem['event_availability']:
-            ing = listItem['event_availability'][jsonData['event_types'][0]['id']]['ing'] 
-        else:
-            ing = 0
-            after = 0
 
         print(
-            "[%2d] %5s %d %5d %s"
+            "[%2d] %5s %5d %s"
             %
             (
                 i,
                 listItem['region'],
-                ing,
                 listItem['score'],
                 listItem['title']
             )
         )
         i+=1
-"""
+print(sortedList)
