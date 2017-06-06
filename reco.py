@@ -91,8 +91,8 @@ class Reco:
         return (1.0 + math.erf(x / math.sqrt(2.0))) / 2.0
 
     def getRecoList(self):
-        #filteredList = self.getFilteredList()
-        allList = self.getAllList()
+        filteredList = self.getFilteredList()
+        #allList = self.getAllList()
         sortedList = self.sortListByScore(allList)
 
         #카테고리별로 분류해서 리턴하기
@@ -194,14 +194,14 @@ class Reco:
                         originList[row][j] = tmp
             for i in range(0, len(originList[row])):
                 originList[row][i]['no'] = i
-        
+        """
         #필터링 
         
         for row in originList:
             for originData in originList[row][:]:      
                 if originData['score'] < 10000:
                     originList[row].remove(originData)
-
+        """
         return originList
 
     def getRange(self, array, value):
