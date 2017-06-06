@@ -1,5 +1,6 @@
 from reco import Reco
 from common import db_manager
+from common import mongo_manager
 from common.util import utils
 import json
 import logging
@@ -22,13 +23,11 @@ recoModule.getRecoList()
 
 
 
-
-recoModule = Reco(jsonData, None)
-
-print( recoModule.getRecoList())
+recoModule = Reco(jsonData, '11862136affcc9d73d4cbc59b226a08be08ce3b446c9791de1a1f674')
 
 
 """
+
 print("=====================")
 print("filtered list")
 print("=====================")
@@ -48,9 +47,12 @@ for category in filteredList:
         )
         i+=1
 print("\n\n\n")
+"""
+
 print("=====================")
 print("sorted list")
 print("=====================")
+
 sortedList = recoModule.getRecoList()
 for category in sortedList:
     print("category : " + str(category))
@@ -74,4 +76,3 @@ for category in sortedList:
             )
         )
         i+=1
-"""

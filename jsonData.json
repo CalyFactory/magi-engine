@@ -2,12 +2,12 @@
     "locations": [
         {
             "main_region": "남부",
-            "region": "강남역",
+            "region": "신사역",
             "no": 1
         },
         {
             "main_region": "남부",
-            "region": "역삼역",
+            "region": "압구정로데오역",
             "no": 2
         }
     ],
@@ -17,13 +17,10 @@
     },
     "event_types": [
         {
-            "id": 6
+            "id": "CPI01"
         },
         {
-            "id": 9
-        },
-        {
-            "id": 3
+            "id": "CPI02"
         }
     ]
 
