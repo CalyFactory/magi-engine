@@ -10,33 +10,33 @@ from bson.json_util import dumps
 
 class Reco:
 
-    pricePriority = {
+    price_priority = {
         'restaurant':67.3, 
         'cafe':41.1, 
         'place':57.4
     }
-    distancePriority = {
+    distance_priority = {
         'restaurant':30.1, 
         'cafe':36.55, 
         'place':40.7
     }
 
-    def __init__(self, jsonData):
-        self.jsonData = jsonData
-        self.userHashKey = jsonData['user_hashkey']
+    def __init__(self, json_data):
+        self.json_data = json_data
+        self.user_hashkey = json_data['user_hashkey']
 
-        self.initData()
+        self.init_data()
 
-    def initData(self):
-        self.locationPriorityList = {}
-        for locationData in self.jsonData['locations']:
-            self.locationPriorityList[locationData['region']] = locationData['no']
+    def init_data(self):
+        self.location_priority_list = {}
+        for location_data in self.json_data['locations']:
+            self.location_priority_list[location_data['region']] = location_data['no']
 
-        self.eventTypeIdList = []
-        for eventType in self.jsonData['event_types']:
-            self.eventTypeIdList.append(eventType['id'])
+        self.event_type_id_list = []
+        for event_type in self.json_data['event_types']:
+            self.event_type_id_list.append(event_type['id'])
         
-        priceList = utils.fetch_all_json(
+        price_list = utils.fetch_all_json(
             db_manager.query(
                 """
                 SELECT price 
@@ -46,7 +46,7 @@ class Reco:
             )
         )
 
-        distanceRowList = utils.fetch_all_json(
+        distance_row_list = utils.fetch_all_json(
             db_manager.query(
                 """
                 SELECT distance 
@@ -56,31 +56,31 @@ class Reco:
             )
         )
 
-        distanceList = []
-        for distanceRow in distanceRowList:
-            distanceString = re.search(r'\d+', distanceRow['distance'])
-            if distanceString is None:
-                distanceData = 99
+        distance_list = []
+        for distance_row in distance_row_list:
+            distance_string = re.search(r'\d+', distance_row['distance'])
+            if distance_string is None:
+                distance_data = 99
             else:
-                distanceData = int(distanceString.group())
-            distanceList.append(distanceData)
+                distance_data = int(distance_string.group())
+            distance_list.append(distance_data)
 
-        distanceList.sort()
+        distance_list.sort()
 
-        self.priceGradeList = []
-        self.distanceGradeList = []
+        self.price_grade_list = []
+        self.distance_grade_list = []
 
         n = 9
 
         for i in range(1, n + 1):
-            position = int(self.getSNDPercent(n, i) * len(priceList)) - 1
-            self.priceGradeList.append(priceList[position]['price'])
+            position = int(self.get_snd_percent(n, i) * len(price_list)) - 1
+            self.price_grade_list.append(price_list[position]['price'])
 
-            position = int(self.getSNDPercent(n, i) * len(distanceList)) - 1
-            self.distanceGradeList.append(distanceList[position])
-            print(self.getSNDPercent(n, i))
-        print(self.priceGradeList)
-        print(self.distanceGradeList)
+            position = int(self.get_snd_percent(n, i) * len(distance_list)) - 1
+            self.distance_grade_list.append(distance_list[position])
+            print(self.get_snd_percent(n, i))
+        print(self.price_grade_list)
+        print(self.distance_grade_list)
 
         result = utils.fetch_all_json(
             db_manager.query(
@@ -90,39 +90,39 @@ class Reco:
                 WHERE
                 user_hashkey = '%s'
                 """
-                % self.userHashKey
+                % self.user_hashkey
             )
         )
-        accountHashKeyList = []
+        account_hash_key_list = []
         for row in result:
-            accountHashKeyList.append(row['account_hashkey'])
+            account_hash_key_list.append(row['account_hashkey'])
 
         #load user data 
-        recoLogList = json.loads(
+        reco_log_list = json.loads(
             dumps(
                 mongo_manager.reco_log.find(
                     {
                         "accountHashkey": {
-                            "$all": accountHashKeyList
+                            "$all": account_hash_key_list
                         }
                     }
                 )
             )
         )
-        print(accountHashKeyList)
-        print(recoLogList)
+        print(account_hash_key_list)
+        print(reco_log_list)
 
         
-        logRecoHashKeyList = []
-        for recoLog in recoLogList:
-            if (recoLog['action'] == "click" and recoLog['category'] == "recoCell" and recoLog['label'] == "deepLink") or \
-                (recoLog['action'] == "click" and recoLog['category'] == "recoCell" and recoLog['label'] == "sharingKakao") or \
-                (recoLog['action'] == "click" and recoLog['category'] == "recoCell" and recoLog['label'] == "sharingKakaoInBlog") or \
-                (recoLog['action'] == "click" and recoLog['category'] == "recoMapCell" and recoLog['label'] == "deepLink") or \
-                (recoLog['action'] == "click" and recoLog['category'] == "recoMapCell" and recoLog['label'] == "sharingKakaoInCell"):
-                logRecoHashKeyList.append(recoLog['recoHashkey'])
+        log_leco_hashkey_list = []
+        for reco_log in reco_log_list:
+            if (reco_log['action'] == "click" and reco_log['category'] == "recoCell" and reco_log['label'] == "deepLink") or \
+                (reco_log['action'] == "click" and reco_log['category'] == "recoCell" and reco_log['label'] == "sharingKakao") or \
+                (reco_log['action'] == "click" and reco_log['category'] == "recoCell" and reco_log['label'] == "sharingKakaoInBlog") or \
+                (reco_log['action'] == "click" and reco_log['category'] == "recoMapCell" and reco_log['label'] == "deepLink") or \
+                (reco_log['action'] == "click" and reco_log['category'] == "recoMapCell" and reco_log['label'] == "sharingKakaoInCell"):
+                log_leco_hashkey_list.append(reco_log['recoHashkey'])
         
-        if len(logRecoHashKeyList) != 0:
+        if len(log_leco_hashkey_list) != 0:
             result = utils.fetch_all_json(
                 db_manager.query(
                     """
@@ -140,14 +140,14 @@ class Reco:
                     RECOMMENDATION.reco_hashkey IN (%s)
                     """ %
                     (
-                        ", ".join("'%s'" % row for row in logRecoHashKeyList)
+                        ", ".join("'%s'" % row for row in log_leco_hashkey_list)
                     )
                 )
             )
         else:
             result = []
         
-        self.userTypeClickCount = {
+        self.user_type_click_count = {
             'property_romantic':0,
             'property_active_dynamic':0,
             'property_active_static':0,
@@ -155,125 +155,125 @@ class Reco:
             'property_food_chinese':0,
             'property_food_japanese':0,
             'property_food_italian':0,
-            'all':len(logRecoHashKeyList)
+            'all':len(log_leco_hashkey_list)
         }
         
         for row in result:
-            hashkeyNum = logRecoHashKeyList.count(row['reco_hashkey'])
+            hashkey_num = log_leco_hashkey_list.count(row['reco_hashkey'])
             for key in row:
                 if row[key] == None:
                     continue
                 if key == 'reco_hashkey':
                     continue
-                self.userTypeClickCount[key] += row[key] * hashkeyNum
-        print(self.userTypeClickCount)
-        self.userPropertyScore = {}
-        if self.userTypeClickCount['all'] == 0:
-            self.userPropertyScore['romanticPriority'] = 0.5
+                self.user_type_click_count[key] += row[key] * hashkey_num
+        print(self.user_type_click_count)
+        self.user_property_score = {}
+        if self.user_type_click_count['all'] == 0:
+            self.user_property_score['romanticPriority'] = 0.5
         else:
-            self.userPropertyScore['romanticPriority'] = (
-                self.userTypeClickCount['property_romantic'] / self.userTypeClickCount['all']
+            self.user_property_score['romanticPriority'] = (
+                self.user_type_click_count['property_romantic'] / self.user_type_click_count['all']
             )
-        activeList = [
+        active_list = [
             'property_active_dynamic',
             'property_active_static'
         ]
-        foodList = [
+        food_list = [
             'property_food_korean',
             'property_food_chinese',
             'property_food_japanese',
             'property_food_italian'
         ]
-        foodList.sort(
-            key = lambda e:(self.userTypeClickCount[e]),
+        food_list.sort(
+            key = lambda e:(self.user_type_click_count[e]),
             reverse = True
         )
-        activeList.sort(
-            key = lambda e:(self.userTypeClickCount[e]),
+        active_list.sort(
+            key = lambda e:(self.user_type_click_count[e]),
             reverse = True
         )
         
         i = 0
-        for activeRow in activeList:
-            self.userPropertyScore[activeRow] = 4.5 - i
+        for active_row in active_list:
+            self.user_property_score[active_row] = 4.5 - i
             i+=1
             
         i = 0
-        for foodRow in foodList:
-            self.userPropertyScore[foodRow] = 4.5 - i
+        for food_row in food_list:
+            self.user_property_score[food_row] = 4.5 - i
             i+=1
-        print(self.userPropertyScore)
+        print(self.user_property_score)
 
-    def getSNDPercent(self, n, index):
+    def get_snd_percent(self, n, index):
         if n == index:
             return 1
         point = (index - n / 2) / 2
-        score = self.__getSNDScore(point)
+        score = self.__get_snd_score(point)
         return score
     
-    def __getSNDScore(self, x):
+    def __get_snd_score(self, x):
         return (1.0 + math.erf(x / math.sqrt(2.0))) / 2.0
 
-    def getRecoList(self):
-        filteredList = self.getFilteredList()
-        #allList = self.getAllList()
-        sortedList = self.sortListByScore(filteredList)
+    def get_reco_list(self):
+        filtered_list = self.get_filtered_list()
+        #allList = self.get_all_list()
+        sorted_list = self.sort_list_by_score(filtered_list)
 
         #카테고리별로 분류해서 리턴하기
-        return sortedList
+        return sorted_list
 
-    def getAllList(self):
+    def get_all_list(self):
 
-        recoList = self.__getAllList()
+        reco_list = self.__get_all_list()
 
-        return recoList
+        return reco_list
 
-    def getFilteredList(self):
+    def get_filtered_list(self):
 
-        locationFilteredList = self.__getLocationFilteredList()
-#        timeFilteredList = self.__getTimeFilteredList(locationFilteredList)
-#        typeFilteredList = self.__getTypeFilteredList(locationFilteredList)
+        location_filtered_list = self.__getlocation_filtered_list()
+#        timeFilteredList = self.__get_time_filtered_list(location_filtered_list)
+#        typeFilteredList = self.__get_type_filtered_list(location_filtered_list)
 
-        return locationFilteredList
+        return location_filtered_list
 
     #두 객체의 우선순위 비교하는 함수
     #첫 번째 인자의 우선순위가 높을경우 True, 아닐경우 False 를 리턴함
-    def isSecondArgHighPriority(self, itemA, itemB):
+    def is_second_arg_high_priority(self, item_a, item_b):
 
-        if itemA['score'] < itemB['score']:
+        if item_a['score'] < item_b['score']:
             return True 
         else:
             return False 
 
         #region
-        itemARegionPriority = self.locationPriorityList[itemA['region']]
-        itemBRegionPriority = self.locationPriorityList[itemB['region']]
+        item_a_region_priority = self.location_priority_list[item_a['region']]
+        item_b_region_priority = self.location_priority_list[itemB['region']]
 
-        if itemARegionPriority < itemBRegionPriority:
+        if item_a_region_priority < item_b_region_priority:
             return False
-        elif itemARegionPriority > itemBRegionPriority:
+        elif item_a_region_priority > item_b_region_priority:
             return True
 
         #목적지표 event_type_availability
         ## TODO : 회의때 목적은 여러개인데 목적지표로 순위를 정하는것을 목적이 하나인 경우만 생각해서 정한 것 같다. 고민이 필요함
 
-        eventTypeId = self.jsonData['event_types'][0]['id']
+        event_type_id = self.json_data['event_types'][0]['id']
 
-        itemAAvailabilityScore = self.__getAvailabilityScore(itemA, eventTypeId)
-        itemBAvailabilityScore = self.__getAvailabilityScore(itemB, eventTypeId)
+        item_a_availability_score = self.__get_availability_score(is_second_arg_high_priority, event_type_id)
+        item_b_availability_score = self.__get_availability_score(item_b, event_type_id)
 
-        if itemAAvailabilityScore > itemBAvailabilityScore:
+        if item_a_availability_score > item_b_availability_score:
             return False 
-        elif itemAAvailabilityScore < itemBAvailabilityScore:
+        elif item_a_availability_score < item_b_availability_score:
             return True 
 
         #score 
-        itemAScore = itemA['score']
-        itemBScore = itemB['score']
+        item_a_score = is_second_arg_high_priority['score']
+        item_b_score = item_b['score']
 
-        if itemAScore < itemBScore:
+        if item_a_score < item_b_score:
             return False 
-        elif itemAScore > itemBScore:
+        elif item_a_score > item_b_score:
             return True 
 
         #등록된 시간 순서대로
@@ -282,18 +282,18 @@ class Reco:
 
         
 
-    def __getAvailabilityScore(self, item, eventTypeId):
+    def __get_availability_score(self, item, event_type_id):
 
-        #TODO : 테스트중이라 주석차리 하지만 eventTypeId가 없는경우가 존재해서는 안됨. 실제론 error를 내야함 
-        if eventTypeId not in item['event_availability']:
+        #TODO : 테스트중이라 주석차리 하지만 event_type_id가 없는경우가 존재해서는 안됨. 실제론 error를 내야함 
+        if event_type_id not in item['event_availability']:
             #raise Exception('no event_type_id in item')
             return 0 # 테스트 후 raise문을 사용할것
         
-        ingValue = item['event_availability'][eventTypeId]['ing'] 
+        ing_value = item['event_availability'][event_type_id]['ing'] 
 
-        return ingValue * 2 + afterValue
+        return ing_value * 2 + afterValue
 
-    def sortListByScore(self, originList):
+    def sort_list_by_score(self, origin_list):
 
         """
         랭킹 순위
@@ -304,63 +304,63 @@ class Reco:
         """
 
         #score 계산
-        for row in originList:
-            for originData in originList[row]:
-                originData['score'] = self.__getScore(originData)
+        for row in origin_list:
+            for origin_data in origin_list[row]:
+                origin_data['score'] = self.__getScore(origin_data)
                 
         #정렬 
-        for row in originList:
-            for i in range(0, len(originList[row])):
-                for j in range(i, len(originList[row])):
-                    if self.isSecondArgHighPriority(originList[row][i], originList[row][j]):
-                        tmp = originList[row][i]
-                        originList[row][i] = originList[row][j]
-                        originList[row][j] = tmp
-            for i in range(0, len(originList[row])):
-                originList[row][i]['no'] = i
+        for row in origin_list:
+            for i in range(0, len(origin_list[row])):
+                for j in range(i, len(origin_list[row])):
+                    if self.is_second_arg_high_priority(origin_list[row][i], origin_list[row][j]):
+                        tmp = origin_list[row][i]
+                        origin_list[row][i] = origin_list[row][j]
+                        origin_list[row][j] = tmp
+            for i in range(0, len(origin_list[row])):
+                origin_list[row][i]['no'] = i
                
         """
         #필터링 
         
-        for row in originList:
-            for originData in originList[row][:]:      
-                if originData['score'] < 10000:
-                    originList[row].remove(originData)
+        for row in origin_list:
+            for origin_data in origin_list[row][:]:      
+                if origin_data['score'] < 10000:
+                    origin_list[row].remove(origin_data)
         """
-        return originList
+        return origin_list
 
-    def getRange(self, array, value):
+    def get_range(self, array, value):
         for i in range(0, len(array)):
             if value<=array[i]:
                 return i + 1
         return len(array)
 
-    def __getScore(self, originData):
+    def __getScore(self, origin_data):
 
         score = 0
 
         #region 
-        if originData['region'] in self.locationPriorityList:
-            score += (10 - self.locationPriorityList[originData['region']]) * 100000
+        if origin_data['region'] in self.location_priority_list:
+            score += (10 - self.location_priority_list[origin_data['region']]) * 100000
 
         #목적
 
-        for i in range(0, len(self.eventTypeIdList)):
-            eventTypeId = self.eventTypeIdList[i]
-            ingValue = 1
-            if eventTypeId in originData['event_availability']:
-                ingValue = originData['event_availability'][eventTypeId]['ing']
+        for i in range(0, len(self.event_type_id_list)):
+            event_type_id = self.event_type_id_list[i]
+            ing_value = 1
+            if event_type_id in origin_data['event_availability']:
+                ing_value = origin_data['event_availability'][event_type_id]['ing']
             # ○ => 3   //*2000
             # △ => 2  //*1000
             # × => 1   //*0
 
-            score += ((ingValue - 1) * 10000) 
+            score += ((ing_value - 1) * 10000) 
       
         # 개인화 점수 
 
-        personalScore = 0
+        personal_score = 0
 
-        propertyList = [
+        property_list = [
             'property_romantic',
             'property_active_dynamic',
             'property_active_static',
@@ -369,63 +369,61 @@ class Reco:
             'property_food_japanese',
             'property_food_italian',
         ]
-        for propertyRow in propertyList:
-            if propertyRow not in originData:
-                originData[propertyRow] = 0
-            if propertyRow == 'property_romantic':
-                if self.userPropertyScore['romanticPriority'] > 0.5:
-                    personalScore += originData['property_romantic'] * 4.5
+        for property_row in property_list:
+            if property_row not in origin_data:
+                origin_data[property_row] = 0
+            if property_row == 'property_romantic':
+                if self.user_property_score['romanticPriority'] > 0.5:
+                    personal_score += origin_data['property_romantic'] * 4.5
                 else:
-                    personalScore += (1 - originData['property_romantic']) * 4.5
+                    personal_score += (1 - origin_data['property_romantic']) * 4.5
             else:
-                personalScore += originData[propertyRow] * self.userPropertyScore[propertyRow]
+                personal_score += origin_data[property_row] * self.user_property_score[property_row]
 
         """
-        print(personalScore)
+        print(personal_score)
         print(
             "title : %s \nromantic : %s\n dynamic : %s\n static : %s\n korean : %s\n chinese : %s\njapanese : %s \nitalian : %s\n\n" 
             %
             (
-                originData['title'],
-                originData['property_romantic'],
-                originData['property_active_dynamic'],
-                originData['property_active_static'],
-                originData['property_food_korean'],
-                originData['property_food_chinese'],
-                originData['property_food_japanese'],
-                originData['property_food_italian']
+                origin_data['title'],
+                origin_data['property_romantic'],
+                origin_data['property_active_dynamic'],
+                origin_data['property_active_static'],
+                origin_data['property_food_korean'],
+                origin_data['property_food_chinese'],
+                origin_data['property_food_japanese'],
+                origin_data['property_food_italian']
             ) 
         )
         print("==")
         """
-        score += int(personalScore) * 1000
-
-
+        score += int(personal_score) * 1000
         
         #가격
 
-        priceData = originData['price']
-        distanceString = re.search(r'\d+', originData['distance'])
-        if distanceString is None:
-            distanceData = 99
+        price_data = origin_data['price']
+        distance_string = re.search(r'\d+', origin_data['distance'])
+        if distance_string is None:
+            distance_data = 99
         else:
-            distanceData = int(distanceString.group())
+            distance_data = int(distance_string.group())
         
-        priceRank = self.getRange(self.priceGradeList, priceData)
-        distanceRank = self.getRange(self.distanceGradeList, distanceData)
+        price_rank = self.get_range(self.price_grade_list, price_data)
+        distance_rank = self.get_range(self.distance_grade_list, distance_data)
 
-        sumPriority = self.pricePriority[originData['category']] + self.distancePriority[originData['category']]
-        pricePriority = self.pricePriority[originData['category']] / sumPriority
-        distancePriority = self.distancePriority[originData['category']] / sumPriority
+        sum_priority = self.price_priority[origin_data['category']] + self.distance_priority[origin_data['category']]
+        price_priority = self.price_priority[origin_data['category']] / sum_priority
+        distance_priority = self.distance_priority[origin_data['category']] / sum_priority
 
-        score += int(10 - (priceRank * pricePriority + distanceRank * distancePriority)) * 100
+        score += int(10 - (price_rank * price_priority + distance_rank * distance_priority)) * 100
 
 
 
         return score
 
-    def __getAllList(self):
-        dataList = utils.fetch_all_json(    
+    def __get_all_list(self):
+        data_list = utils.fetch_all_json(    
             db_manager.query(
                 """
                 SELECT 
@@ -455,35 +453,35 @@ class Reco:
             )
         )
 
-        recoList = {
+        reco_list = {
             'restaurant': [],
             'cafe': [],
             'place': []
         }
 
-        for dataItem in dataList:
-            recoList[dataItem['category']].append(dataItem)
+        for data_item in data_list:
+            reco_list[data_item['category']].append(data_item)
         
-        for dataItem in recoList:
+        for data_item in reco_list:
         
-            for recoItem in recoList[dataItem]:
-                jsonConvertedItem = json.loads(recoItem['event_availability'])
-                recoItem['event_availability'] = {}
-                for jsonItem in jsonConvertedItem:
-                    if jsonItem['event_type_id'] == None:
+            for reco_item in reco_list[data_item]:
+                json_converted_item = json.loads(reco_item['event_availability'])
+                reco_item['event_availability'] = {}
+                for json_item in json_converted_item:
+                    if json_item['event_type_id'] == None:
                         continue
-                    recoItem['event_availability'][jsonItem['event_type_id']] = jsonItem
+                    reco_item['event_availability'][json_item['event_type_id']] = json_item
         
-        return recoList
+        return reco_list
 
         
-    def __getLocationFilteredList(self):
-        locationList = self.jsonData['locations']
+    def __get_location_filtered_list(self):
+        location_list = self.json_data['locations']
         
         # TODO : region에 입력된 값이 db에 존재하는지 체크해야하지 않을까?
-        queryOptionParam = ", ".join("'%s'" % locationData['region'] for locationData in locationList)
+        query_option_param = ", ".join("'%s'" % location_data['region'] for location_data in location_list)
 
-        dataList = utils.fetch_all_json(
+        data_list = utils.fetch_all_json(
             db_manager.query(
                 """
                 SELECT 
@@ -519,50 +517,50 @@ class Reco:
                     region IN (%s)
                 GROUP BY r.reco_hashkey
                 """ %
-                queryOptionParam
+                query_option_param
             )
         )
 
-        recoList = {
+        reco_list = {
             'restaurant': [],
             'cafe': [],
             'place': []
         }
 
-        for dataItem in dataList:
-            recoList[dataItem['category']].append(dataItem)
+        for data_item in data_list:
+            reco_list[data_item['category']].append(data_item)
         
-        for dataItem in recoList:
+        for data_item in reco_list:
         
-            for recoItem in recoList[dataItem]:
-                jsonConvertedItem = json.loads(recoItem['event_availability'])
-                recoItem['event_availability'] = {}
-                for jsonItem in jsonConvertedItem:
-                    if jsonItem['event_type_id'] == None:
+            for reco_item in reco_list[data_item]:
+                json_converted_item = json.loads(reco_item['event_availability'])
+                reco_item['event_availability'] = {}
+                for json_item in json_converted_item:
+                    if json_item['event_type_id'] == None:
                         continue
-                    recoItem['event_availability'][jsonItem['event_type_id']] = jsonItem
+                    reco_item['event_availability'][json_item['event_type_id']] = json_item
         
-        return recoList
+        return reco_list
 
-    def __getTimeFilteredList(self, originList):
-        timeData = self.jsonData['time']
-        return originList 
+    def __get_time_filtered_list(self, origin_list):
+        timeData = self.json_data['time']
+        return origin_list 
 
-    def __getTypeFilteredList(self, originList):
-        eventTypeData = self.jsonData['event_types']
-        eventTypeId = self.jsonData['event_types'][0]['id']
+    def __get_type_filtered_list(self, origin_list):
+        event_type_data = self.json_data['event_types']
+        event_type_id = self.json_data['event_types'][0]['id']
 
-        for row in originList:
-            for originData in originList[row][:]:            
-                if eventTypeId not in originData['event_availability']: 
+        for row in origin_list:
+            for origin_data in origin_list[row][:]:            
+                if event_type_id not in origin_data['event_availability']: 
                     #raise Exception('no event_type_id in item') #TODO : 테스트일때만 에러를 생략
                     ing = 0
                 else:
-                    ing = originData['event_availability'][eventTypeId]['ing']
+                    ing = origin_data['event_availability'][event_type_id]['ing']
 
     #            if ing + after == 0: #TODO : 테스트 일때만 필터링을 안함
-    #                originList.remove(originData)
-        return originList
+    #                origin_list.remove(origin_data)
+        return origin_list
 
 def hello():
     result = utils.fetch_all_json(
