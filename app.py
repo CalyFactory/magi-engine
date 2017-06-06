@@ -7,12 +7,12 @@ import logging
 logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
 
 with open('./jsonData.json') as conf_json:
-    jsonData = json.load(conf_json)
+    json_data = json.load(conf_json)
     
 
 
 
-recoModule = Reco(jsonData)
+reco_module = Reco(json_data)
 
 
 
@@ -42,20 +42,20 @@ print("=====================")
 print("sorted list")
 print("=====================")
 
-sortedList = recoModule.getRecoList()
-for category in sortedList:
+sorted_list = reco_module.get_reco_list()
+for category in sorted_list:
     print("category : " + str(category))
     i=0
-    for listItem in sortedList[category]:
+    for item in sorted_list[category]:
 
         print(
             "[%2d] %5s %5d %s"
             %
             (
                 i,
-                listItem['region'],
-                listItem['score'],
-                listItem['title']
+                item['region'],
+                item['score'],
+                item['title']
             )
         )
         i+=1

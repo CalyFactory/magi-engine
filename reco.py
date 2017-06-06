@@ -230,7 +230,7 @@ class Reco:
 
     def get_filtered_list(self):
 
-        location_filtered_list = self.__getlocation_filtered_list()
+        location_filtered_list = self.__get_location_filtered_list()
 #        timeFilteredList = self.__get_time_filtered_list(location_filtered_list)
 #        typeFilteredList = self.__get_type_filtered_list(location_filtered_list)
 

@@ -12,7 +12,7 @@ recoModule = Reco(jsonData)
 
 추천 데이터 가져오기!
 ```
-recoModule.getRecoList()
+recoModule.get_reco_list()
 ```
 
 추천데이터 결과 예시
