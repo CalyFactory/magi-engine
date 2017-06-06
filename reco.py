@@ -21,9 +21,9 @@ class Reco:
         'place':40.7
     }
 
-    def __init__(self, jsonData, accountHashKey):
+    def __init__(self, jsonData):
         self.jsonData = jsonData
-        self.accountHashKey = accountHashKey
+        self.userHashKey = jsonData['user_hashkey']
 
         self.initData()
 
@@ -82,16 +82,35 @@ class Reco:
         print(self.priceGradeList)
         print(self.distanceGradeList)
 
+        result = utils.fetch_all_json(
+            db_manager.query(
+                """
+                SELECT account_hashkey
+                FROM USERACCOUNT
+                WHERE
+                user_hashkey = '%s'
+                """
+                % self.userHashKey
+            )
+        )
+        accountHashKeyList = []
+        for row in result:
+            accountHashKeyList.append(row['account_hashkey'])
+
         #load user data 
         recoLogList = json.loads(
             dumps(
                 mongo_manager.reco_log.find(
                     {
-                        "accountHashkey": self.accountHashKey
+                        "accountHashkey": {
+                            "$all": accountHashKeyList
+                        }
                     }
                 )
             )
         )
+        print(accountHashKeyList)
+        print(recoLogList)
 
         
         logRecoHashKeyList = []
@@ -361,6 +380,7 @@ class Reco:
             else:
                 personalScore += originData[propertyRow] * self.userPropertyScore[propertyRow]
 
+        """
         print(personalScore)
         print(
             "title : %s \nromantic : %s\n dynamic : %s\n static : %s\n korean : %s\n chinese : %s\njapanese : %s \nitalian : %s\n\n" 
@@ -377,6 +397,7 @@ class Reco:
             ) 
         )
         print("==")
+        """
         score += int(personalScore) * 1000
 
 

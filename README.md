@@ -6,9 +6,9 @@
 ```
 from reco import Reco
 
-recoModule = Reco(jsonData, accountHashkey) 
+recoModule = Reco(jsonData) 
 ```
-첫번째 인자는 일정보강 모듈에서 받은 json데이터, 두번째 인자는 accountHashKey입니다.
+첫번째 인자는 일정보강 모듈에서 받은 json데이터
 
 추천 데이터 가져오기!
 ```
