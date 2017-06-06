@@ -1,14 +1,276 @@
 추천모듈 사용방법
+
 ---
 
 추천 모듈 객체 생성!
 ```
-recoModule = Reco(jsonData, None) 
+from reco import Reco
+
+recoModule = Reco(jsonData, accountHashkey) 
 ```
-첫번째 인자는 일정보강 모듈에서 받은 json데이터, 두번째 인자는 유저성향인데 현재 사용하지 않으니 None으로 넣으면 됩니다.
+첫번째 인자는 일정보강 모듈에서 받은 json데이터, 두번째 인자는 accountHashKey입니다.
 
 추천 데이터 가져오기!
 ```
 recoModule.getRecoList()
 ```
+
+추천데이터 결과 예시
+```
+{
+    'cafe':[
+        {
+            'event_availability':{
+                'CPI04':{
+                    'id':166,
+                    'ing':3,
+                    'event_type_id':'CPI04'
+                },
+                'CPI01':{
+                    'id':177,
+                    'ing':3,
+                    'event_type_id':'CPI01'
+                },
+                'CPI03':{
+                    'id':207,
+                    'ing':3,
+                    'event_type_id':'CPI03'
+                },
+                'CPI05':{
+                    'id':246,
+                    'ing':3,
+                    'event_type_id':'CPI05'
+                },
+                'CPI06':{
+                    'id':180,
+                    'ing':3,
+                    'event_type_id':'CPI06'
+                },
+                'CPI02':{
+                    'id':253,
+                    'ing':3,
+                    'event_type_id':'CPI02'
+                }
+            },
+            'property_active_static':0,
+            'category':'cafe',
+            'property_food_japanese':0,
+            'distance':'신사역에서 걸어서 6분',
+            'property_food_chinese':0,
+            'no':0,
+            'property_romantic':0,
+            'reco_hashkey':'5d78d696-de96-4f48-be72-e9796ed4830e',
+            'score':944500,
+            'title':'듀자미',
+            'property_active_dynamic':0,
+            'property_food_italian':0,
+            'region':'신사역',
+            'property_food_korean':0,
+            'price':5000
+        },
+    ],
+    'restaurant':[
+    {
+        'event_availability':{
+            'CPI04':{
+                'id':251,
+                'ing':2,
+                'event_type_id':'CPI04'
+            },
+            'CPI01':{
+                'id':201,
+                'ing':3,
+                'event_type_id':'CPI01'
+            },
+            'CPI03':{
+                'id':233,
+                'ing':2,
+                'event_type_id':'CPI03'
+            },
+            'CPI05':{
+                'id':259,
+                'ing':3,
+                'event_type_id':'CPI05'
+            },
+            'CPI06':{
+                'id':213,
+                'ing':3,
+                'event_type_id':'CPI06'
+            },
+            'CPI02':{
+                'id':227,
+                'ing':3,
+                'event_type_id':'CPI02'
+            }
+        },
+        'property_active_static':0,
+        'category':'restaurant',
+        'property_food_japanese':0,
+        'distance':'신사역에서 걸어서 10분',
+        'property_food_chinese':0,
+        'no':0,
+        'property_romantic':0,
+        'reco_hashkey':'5da2d285-fd5c-4bdd-98bf-fd644cab2924',
+        'score':946400,
+        'title':'베가스',
+        'property_active_dynamic':0,
+        'property_food_italian':1,
+        'region':'신사역',
+        'property_food_korean':0,
+        'price':9000
+    },
+    {
+        'event_availability':{
+            'CPI04':{
+                'id':169,
+                'ing':3,
+                'event_type_id':'CPI04'
+            },
+            'CPI01':{
+                'id':148,
+                'ing':3,
+                'event_type_id':'CPI01'
+            },
+            'CPI03':{
+                'id':214,
+                'ing':3,
+                'event_type_id':'CPI03'
+            },
+            'CPI05':{
+                'id':155,
+                'ing':1,
+                'event_type_id':'CPI05'
+            },
+            'CPI02':{
+                'id':149,
+                'ing':3,
+                'event_type_id':'CPI02'
+            },
+            'CPI06':{
+                'id':205,
+                'ing':2,
+                'event_type_id':'CPI06'
+            }
+        },
+        'property_active_static':0,
+        'category':'restaurant',
+        'property_food_japanese':0,
+        'distance':'신사역에서 걸어서 4분',
+        'property_food_chinese':0,
+        'no':1,
+        'property_romantic':0,
+        'reco_hashkey':'6be2a7d6-a195-472e-b8b9-1d01356ab419',
+        'score':946400,
+        'title':'미래소년',
+        'property_active_dynamic':0,
+        'property_food_italian':1,
+        'region':'신사역',
+        'property_food_korean':0,
+        'price':11000
+        }
+    ],
+    'place':[
+        {
+            'event_availability':{
+                'CPI04':{
+                    'id':181,
+                    'ing':1,
+                    'event_type_id':'CPI04'
+                },
+                'CPI01':{
+                    'id':171,
+                    'ing':3,
+                    'event_type_id':'CPI01'
+                },
+                'CPI03':{
+                    'id':241,
+                    'ing':2,
+                    'event_type_id':'CPI03'
+                },
+                'CPI05':{
+                    'id':195,
+                    'ing':1,
+                    'event_type_id':'CPI05'
+                },
+                'CPI02':{
+                    'id':228,
+                    'ing':3,
+                    'event_type_id':'CPI02'
+                },
+                'CPI06':{
+                    'id':235,
+                    'ing':3,
+                    'event_type_id':'CPI06'
+                }
+            },
+            'property_active_static':1,
+            'category':'place',
+            'property_food_japanese':0,
+            'distance':'신사역에서 걸어서 3분',
+            'property_food_chinese':0,
+            'no':0,
+            'property_romantic':0,
+            'reco_hashkey':'6a40f87f-0466-45e7-93d8-59fc2b435f42',
+            'score':948600,
+            'title':'놀숲',
+            'property_active_dynamic':0,
+            'property_food_italian':0,
+            'region':'신사역',
+            'property_food_korean':0,
+            'price':4900
+        },
+        {
+        'event_availability':{
+            'CPI04':{
+                'id':245,
+                'ing':1,
+                'event_type_id':'CPI04'
+            },
+            'CPI01':{
+                'id':237,
+                'ing':3,
+                'event_type_id':'CPI01'
+            },
+            'CPI03':{
+                'id':173,
+                'ing':2,
+                'event_type_id':'CPI03'
+            },
+            'CPI05':{
+                'id':218,
+                'ing':1,
+                'event_type_id':'CPI05'
+            },
+            'CPI06':{
+                'id':202,
+                'ing':3,
+                'event_type_id':'CPI06'
+            },
+            'CPI02':{
+                'id':194,
+                'ing':3,
+                'event_type_id':'CPI02'
+            }
+        },
+        'property_active_static':1,
+        'category':'place',
+        'property_food_japanese':0,
+        'distance':'신사역에서 걸어서 8분',
+        'property_food_chinese':0,
+        'no':1,
+        'property_romantic':0,
+        'reco_hashkey':'dc25104d-64cc-4051-a085-9004345b5047',
+        'score':948600,
+        'title':'Dr Jart+',
+        'property_active_dynamic':0,
+        'property_food_italian':0,
+        'region':'신사역',
+        'property_food_korean':0,
+        'price':0
+        }
+    ]
+}
+
+```
+
 

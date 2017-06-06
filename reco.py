@@ -149,9 +149,12 @@ class Reco:
                 self.userTypeClickCount[key] += row[key] * hashkeyNum
         print(self.userTypeClickCount)
         self.userPropertyScore = {}
-        self.userPropertyScore['romanticPriority'] = (
-            self.userTypeClickCount['property_romantic'] / self.userTypeClickCount['all']
-        )
+        if self.userTypeClickCount['all'] == 0:
+            self.userPropertyScore['romanticPriority'] = 0.5
+        else:
+            self.userPropertyScore['romanticPriority'] = (
+                self.userTypeClickCount['property_romantic'] / self.userTypeClickCount['all']
+            )
         activeList = [
             'property_active_dynamic',
             'property_active_static'
@@ -210,9 +213,9 @@ class Reco:
 
         locationFilteredList = self.__getLocationFilteredList()
 #        timeFilteredList = self.__getTimeFilteredList(locationFilteredList)
-        typeFilteredList = self.__getTypeFilteredList(locationFilteredList)
+#        typeFilteredList = self.__getTypeFilteredList(locationFilteredList)
 
-        return typeFilteredList
+        return locationFilteredList
 
     #두 객체의 우선순위 비교하는 함수
     #첫 번째 인자의 우선순위가 높을경우 True, 아닐경우 False 를 리턴함

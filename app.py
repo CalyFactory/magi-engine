@@ -23,11 +23,11 @@ recoModule.getRecoList()
 
 
 
-recoModule = Reco(jsonData, '11862136affcc9d73d4cbc59b226a08be08ce3b446c9791de1a1f674')
+recoModule = Reco(jsonData, '2')
+
 
 
 """
-
 print("=====================")
 print("filtered list")
 print("=====================")
@@ -47,7 +47,7 @@ for category in filteredList:
         )
         i+=1
 print("\n\n\n")
-
+"""
 
 print("=====================")
 print("sorted list")
@@ -58,22 +58,16 @@ for category in sortedList:
     print("category : " + str(category))
     i=0
     for listItem in sortedList[category]:
-        if jsonData['event_types'][0]['id'] in listItem['event_availability']:
-            ing = listItem['event_availability'][jsonData['event_types'][0]['id']]['ing'] 
-        else:
-            ing = 0
-            after = 0
 
         print(
-            "[%2d] %5s %d %5d %s"
+            "[%2d] %5s %5d %s"
             %
             (
                 i,
                 listItem['region'],
-                ing,
                 listItem['score'],
                 listItem['title']
             )
         )
         i+=1
-"""
+print(sortedList)
