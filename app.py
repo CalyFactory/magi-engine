@@ -47,7 +47,7 @@ for category in filteredList:
         )
         i+=1
 print("\n\n\n")
-"""
+
 
 print("=====================")
 print("sorted list")
@@ -76,3 +76,4 @@ for category in sortedList:
             )
         )
         i+=1
+"""

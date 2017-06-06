@@ -108,6 +108,7 @@ class Reco:
                 db_manager.query(
                     """
                     SELECT 
+                        reco_hashkey,
                         property_romantic, 
                         property_active_dynamic, 
                         property_active_static, 
@@ -139,11 +140,14 @@ class Reco:
         }
         
         for row in result:
+            hashkeyNum = logRecoHashKeyList.count(row['reco_hashkey'])
             for key in row:
                 if row[key] == None:
                     continue
-                self.userTypeClickCount[key] += row[key]
-
+                if key == 'reco_hashkey':
+                    continue
+                self.userTypeClickCount[key] += row[key] * hashkeyNum
+        print(self.userTypeClickCount)
         self.userPropertyScore = {}
         self.userPropertyScore['romanticPriority'] = (
             self.userTypeClickCount['property_romantic'] / self.userTypeClickCount['all']
